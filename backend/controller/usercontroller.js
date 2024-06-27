@@ -198,7 +198,7 @@ export const update = async (req, res) => {
                             console.error('Error updating user:', error);
                             return res.status(500).json({ error: 'Failed to update user' });
                         }
-                        res.status(200).json({ msg: 'User updated successfully' });
+                        res.status(200).json({statusCode:"201", message: 'User updated successfully' });
                     }
                 );
             }
@@ -250,7 +250,7 @@ export const deleteUser = async (req, res) => {
                             console.error('Error deleting user:', error);
                             return res.status(500).json({ error: 'Failed to delete user' });
                         }
-                        res.status(200).json({ msg: 'User deleted successfully' });
+                        res.status(200).json({ statusCode:"201",message: 'User deleted successfully' });
                     }
                 );
             }
