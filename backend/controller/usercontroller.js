@@ -260,3 +260,25 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+export const getAllKYC = async (req, res) => {
+    try {
+        connection.query(
+            'SELECT * FROM kyc_form',
+            (error, results) => {
+                if (error) {
+                    console.error('Error fetching users:', error);
+                    return res.status(500).json({ error: 'Failed to fetch users' });
+                }
+
+                if (results.length === 0) {
+                    return res.status(404).json({ msg: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
+            }
+        );
+    } catch (error) {
+        console.error('Error in getAll:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
