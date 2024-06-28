@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 
 
 export const login = async (req, res) => {
-    console.log("login enter...")
     const { email, password } = req.body;
     try {
         connection.query(
@@ -43,14 +42,21 @@ export const login = async (req, res) => {
 };
 export const create = async (req, res) => {
     try {
-        const { username, email, password, role } = req.body;
-        console.log("req.body ...", req.body);
+        const { username, email, password, role, user_ref_id } = req.body;
 
         // Perform validation if necessary
-        if (!username || !email || !password) {
-            return res.status(400).json({ msg: 'All filed are required' });
+        if (!username || !email || !password || !user_ref_id) {
+            return res.status(400).json({ msg: 'All fields are required' });
         }
         const userRole = role || 'user';
+
+        // Generate reference ID
+        const generateRefId = () => {
+            const randomSixDigit = Math.floor(100000 + Math.random() * 900000).toString();
+            return `chess${randomSixDigit}`;
+        };
+
+        const referenceId = generateRefId();
 
         // Check if the email already exists
         connection.query(
@@ -65,27 +71,42 @@ export const create = async (req, res) => {
                     return res.status(400).json({ error: 'Email already in use' });
                 }
 
-                // Hash the password
-                try {
-                    const hashedPassword = await bcrypt.hash(password, 10);
-
-                    // Insert user data into MySQL
-                    connection.query(
-                        'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-                        [username, email, hashedPassword, userRole],
-                        (error, results) => {
-                            if (error) {
-                                console.error('Error inserting user:', error);
-                                return res.status(500).json({ error: 'Failed to create user' });
-                            }
-                            console.log('User created successfully');
-                            res.status(201).json({ statusCode: "201", message: 'User created successfully' });
+                // Check if the provided user_ref_id exists
+                connection.query(
+                    'SELECT * FROM users WHERE ref_id = ?',
+                    [user_ref_id],
+                    async (refError, refResults) => {
+                        if (refError) {
+                            console.error('Error checking ref_id:', refError);
+                            return res.status(500).json({ error: 'Failed to check ref_id' });
                         }
-                    );
-                } catch (hashError) {
-                    console.error('Error hashing password:', hashError);
-                    res.status(500).json({ error: 'Failed to hash password' });
-                }
+                        if (refResults.length === 0) {
+                            return res.status(400).json({ error: 'Invalid referral ID' });
+                        }
+
+                        // Hash the password
+                        try {
+                            const hashedPassword = await bcrypt.hash(password, 10);
+
+                            // Insert user data into MySQL
+                            connection.query(
+                                'INSERT INTO users (name, email, password, role, ref_id) VALUES (?, ?, ?, ?, ?)',
+                                [username, email, hashedPassword, userRole, referenceId],
+                                (insertError, insertResults) => {
+                                    if (insertError) {
+                                        console.error('Error inserting user:', insertError);
+                                        return res.status(500).json({ error: 'Failed to create user' });
+                                    }
+                                    console.log('User created successfully');
+                                    res.status(201).json({ statusCode: "201", message: 'User created successfully' });
+                                }
+                            );
+                        } catch (hashError) {
+                            console.error('Error hashing password:', hashError);
+                            res.status(500).json({ error: 'Failed to hash password' });
+                        }
+                    }
+                );
             }
         );
 
@@ -94,16 +115,18 @@ export const create = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 export const createkYC = async (req, res) => {
     try {
         const { email_id, password, account_holder_name, account_number,confirm_account_number,ifsc_code,bank_name,branch} = req.body;
         // Perform validation if necessary
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
         if (!email_id || !password || !account_holder_name || !account_number || !confirm_account_number || !ifsc_code || !bank_name || !branch) {
             return res.status(400).json({ msg: 'All filed are required ' });
         }
         connection.query(
-            'INSERT INTO kyc_form (email_id, password, account_holder_name, account_number,confirm_account_number,ifsc_code,bank_name,branch) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [email_id, password, account_holder_name, account_number,confirm_account_number,ifsc_code,bank_name,branch],
+            'INSERT INTO kyc_form (email_id, password, account_holder_name, account_number,confirm_account_number,ifsc_code,bank_name,branch,user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [email_id, password, account_holder_name, account_number,confirm_account_number,ifsc_code,bank_name,branch,user_id],
             (error, results) => {
                 if (error) {
                     console.error('Error inserting user:', error);
@@ -113,7 +136,6 @@ export const createkYC = async (req, res) => {
                 res.status(201).json({ statusCode: "201", message: 'Kyc created successfully' });
             }
         );
-////
     } catch (error) {
         console.error('Error creating user:', error);
         res.status(500).json({ error: error.message });
@@ -121,9 +143,12 @@ export const createkYC = async (req, res) => {
 };
 export const getAll = async (req, res) => {
     try {
-        console.log("enter in get all ....")
+        console.log("enter in get all ....");
         connection.query(
-            'SELECT * FROM users',
+            `SELECT u1.*, 
+                    u2.id AS ref_user_id, u2.name AS ref_name, u2.email AS ref_email, u2.role AS ref_role
+             FROM users u1 
+             LEFT JOIN users u2 ON u1.ref_id = u2.ref_id`,
             (error, results) => {
                 if (error) {
                     console.error('Error fetching users:', error);
@@ -134,7 +159,22 @@ export const getAll = async (req, res) => {
                     return res.status(404).json({ msg: "No users found" });
                 }
 
-                res.status(200).json(results);
+                const usersWithRef = results.map(user => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    password: user.password,
+                    role: user.role,
+                    ref_user: user.ref_user_id ? {
+                        // id: user.ref_user_id,
+                        ref_id: user.ref_id,
+                        name: user.ref_name,
+                        email: user.ref_email,
+                        role: user.ref_role
+                    } : null
+                }));
+
+                res.status(200).json(usersWithRef);
             }
         );
     } catch (error) {
@@ -142,6 +182,7 @@ export const getAll = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 export const getOne = async (req, res) => {
     try {
@@ -208,20 +249,6 @@ export const update = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// export const update = async (req, res) => {
-//     try {
-//         const id = req.params.id;
-//         const userExist = await User.findById(id);
-//         if (!userExist) {
-//             return res.status(401).json({ msg: "user note found" });
-//         }
-//         const updateDate = await User.findByIdAndUpdate(id, req.body, { new: true });
-//         res.status(200).json({ msg: "user has updated succesfully" });
-//     } catch (error) {
-//         res.status(500).json({ error: error });
-//     }
-// }
-
 // delet api user
 export const deleteUser = async (req, res) => {
     try {
@@ -271,7 +298,7 @@ export const getAllKYC = async (req, res) => {
                 }
 
                 if (results.length === 0) {
-                    return res.status(404).json({ msg: "No found data" });
+                    return res.status(404).json({ message: "No found data" });
                 }
 
                 res.status(200).json({statusCode:"200",data:results});
@@ -282,3 +309,139 @@ export const getAllKYC = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+export const getSingleKYC = async (req, res) => {
+    try {
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        connection.query(
+            'SELECT * FROM kyc_form WHERE user_id=?',[user_id],
+            (error, results) => {
+                if (error) {
+                    console.error('Error fetching users:', error);
+                    return res.status(500).json({ error: 'Failed to fetch users' });
+                }
+
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
+            }
+        );
+    } catch (error) {
+        console.error('Error in getAll:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+export const addDeposite = async (req, res) => {
+    try {
+        const {transation_id,amount} = req.body;
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        const status =0;
+        if (!transation_id || !amount ) {
+            return res.status(400).json({ message: 'All filed are required ' });
+        }
+        if(amount>=30){
+        connection.query(
+            'INSERT INTO deposite (transation_id, amount,status,user_id ) VALUES (?, ?, ?, ?)',
+            [transation_id, amount,status,user_id],
+            (error, results) => {
+                if (error) {
+                    console.error('Error inserting user:', error);
+                    return res.status(500).json({ error: 'Failed deposite' });
+                }
+                console.log('Kyc created successfully');
+                res.status(201).json({ statusCode: "201", message: 'deposit added successfully' });
+            }
+        );
+        }
+        else{
+           return res.status(400).json({ statusCode: "400",message: 'you can deposite amount less then 30 rs ' }); 
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+export const allDeposites = async (req, res) => {
+    try {
+        connection.query(
+            'SELECT * FROM deposite',
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed to fetch users' });
+                }
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+export const getUserDeposits = async (req, res) => {
+    try {
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        connection.query(
+            'SELECT * FROM deposite WHERE user_id=?',[user_id],
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed to fetch users' });
+                }
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+export const approveDepositRequest = async (req, res) => {
+    try {
+        const {id} = req.body;
+        if (!id) {
+            return res.status(400).json({ message: 'id is required ' });
+        }
+        connection.query(
+            'UPDATE deposite SET status = 1 WHERE id=?',
+            [id],
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed deposite' });
+                }
+                console.log('Kyc created successfully');
+                res.status(201).json({ statusCode: "201", message: 'deposit approved successfully' });
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// export const logout = async (req, res) => {
+//     const token = req.body.token;
+
+//     if (!token) {
+//         return res.status(400).json({ message: 'Token is required' });
+//     }
+
+//     let decoded;
+//     try {
+//         decoded = jwt.verify(token, 'your_jwt_secret');
+//     } catch (err) {
+//         return res.status(400).json({ message: 'Invalid token' });
+//     }
+
+//     const userId = decoded.id;
+
+//     const query = 'INSERT INTO logout (user_id, token) VALUES (?, ?)';
+//     connection.query(query, [userId, token], (err, results) => {
+//         if (err) {
+//             return res.status(500).json({ message: 'Database error', error: err });
+//         }
+//         res.status(200).json({ message: 'Logged out successfully' });
+//     });
+// };
