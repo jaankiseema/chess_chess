@@ -406,6 +406,7 @@ export const approveDepositRequest = async (req, res) => {
         if (!id) {
             return res.status(400).json({ message: 'id is required ' });
         }
+
         connection.query(
             'SELECT * FROM deposite WHERE id = ?',
             [id],
@@ -429,15 +430,17 @@ export const approveDepositRequest = async (req, res) => {
                             console.error('Error updating deposit:', updateError);
                             return res.status(500).json({ error: 'Failed to update deposit' });
                         }
+
                         connection.query(
-                            'INSERT INTO withdraw (transaction_id, amount, status, user_id) VALUES (?, ?, ?, ?)',
-                            [deposit.transation_id, deposit.amount, 0, deposit.user_id],
-                            (insertError, insertResults) => {
-                                if (insertError) {
-                                    console.error('Error inserting withdrawal:', insertError);
-                                    return res.status(500).json({ error: 'Failed to create withdrawal' });
+                            'UPDATE users SET fond = ? WHERE id = ?',
+                            [deposit.amount, deposit.user_id],
+                            (updateUserError, updateUserResults) => {
+                                if (updateUserError) {
+                                    console.error('Error updating user fond:', updateUserError);
+                                    return res.status(500).json({ error: 'Failed to update user fond' });
                                 }
-                                res.status(201).json({ statusCode: "201", message: 'Deposit approved  successfully' });
+
+                                res.status(201).json({ statusCode: "201", message: 'Deposit approved successfully' });
                             }
                         );
                     }
@@ -449,6 +452,59 @@ export const approveDepositRequest = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+export const addfond = async (req, res) => {
+    try {
+        const { transation_id, amount } = req.body;
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        const status = 0;
+
+        if (!transation_id || !amount) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        if (amount < 30) {
+            return res.status(400).json({ statusCode: "400", message: 'You cannot deposit an amount less than 30 rs' });
+        }
+
+        connection.query(
+            'SELECT fond FROM users WHERE id = ?',
+            [user_id],
+            (selectError, selectResults) => {
+                if (selectError) {
+                    console.error('Error fetching user fond:', selectError);
+                    return res.status(500).json({ error: 'Failed to fetch user fond' });
+                }
+
+                if (selectResults.length === 0) {
+                    return res.status(404).json({ message: 'User not found' });
+                }
+
+                const userFond = selectResults[0].fond;
+
+                if (userFond === 0 || amount > userFond) {
+                    return res.status(400).json({ statusCode: "400", message: 'Your amount is not sufficient' });
+                }
+
+                connection.query(
+                    'INSERT INTO withdraw (transaction_id, amount, status, user_id) VALUES (?, ?, ?, ?)',
+                    [transation_id, amount, status, user_id],
+                    (insertError, insertResults) => {
+                        if (insertError) {
+                            console.error('Error inserting deposit request:', insertError);
+                            return res.status(500).json({ error: 'Failed to deposit' });
+                        }
+
+                        console.log('Deposit request created successfully');
+                        res.status(201).json({ statusCode: "201", message: 'Fond added successfully' });
+                    }
+                );
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const getUserwithdrawn = async (req, res) => {
     try {
         const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
@@ -485,6 +541,77 @@ export const getWithdrawn = async (req, res) => {
             }
         );
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const approveFondRequest = async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) {
+            return res.status(400).json({ message: 'ID is required' });
+        }
+
+        connection.query(
+            'SELECT * FROM withdraw WHERE id = ?',
+            [id],
+            (selectError, selectResults) => {
+                if (selectError) {
+                    console.error('Error fetching withdraw request:', selectError);
+                    return res.status(500).json({ error: 'Failed to fetch withdraw request' });
+                }
+
+                if (selectResults.length === 0) {
+                    return res.status(404).json({ message: 'Withdraw request not found' });
+                }
+
+                const withdrawRequest = selectResults[0];
+
+                connection.query(
+                    'UPDATE withdraw SET status = 1 WHERE id = ?',
+                    [id],
+                    (updateError, updateResults) => {
+                        if (updateError) {
+                            console.error('Error updating withdraw request:', updateError);
+                            return res.status(500).json({ error: 'Failed to update withdraw request' });
+                        }
+
+                        connection.query(
+                            'SELECT fond FROM users WHERE id = ?',
+                            [withdrawRequest.user_id],
+                            (selectUserError, selectUserResults) => {
+                                if (selectUserError) {
+                                    console.error('Error fetching user fond:', selectUserError);
+                                    return res.status(500).json({ error: 'Failed to fetch user fond' });
+                                }
+
+                                if (selectUserResults.length === 0) {
+                                    return res.status(404).json({ message: 'User not found' });
+                                }
+
+                                const currentFond = selectUserResults[0].fond;
+                                const newFond = currentFond - withdrawRequest.amount;
+
+                                connection.query(
+                                    'UPDATE users SET fond = ? WHERE id = ?',
+                                    [newFond, withdrawRequest.user_id],
+                                    (updateUserError, updateUserResults) => {
+                                        if (updateUserError) {
+                                            console.error('Error updating user fond:', updateUserError);
+                                            return res.status(500).json({ error: 'Failed to update user fond' });
+                                        }
+
+                                        res.status(201).json({ statusCode: "201", message: 'Fond approved successfully' });
+                                    }
+                                );
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    } catch (error) {
+        console.error('Error in approveFondRequest:', error);
         res.status(500).json({ error: error.message });
     }
 };
