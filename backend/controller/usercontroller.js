@@ -402,25 +402,96 @@ export const getUserDeposits = async (req, res) => {
 };
 export const approveDepositRequest = async (req, res) => {
     try {
-        const {id} = req.body;
+        const { id } = req.body;
         if (!id) {
             return res.status(400).json({ message: 'id is required ' });
         }
         connection.query(
-            'UPDATE deposite SET status = 1 WHERE id=?',
+            'SELECT * FROM deposite WHERE id = ?',
             [id],
+            (selectError, selectResults) => {
+                if (selectError) {
+                    console.error('Error fetching deposit:', selectError);
+                    return res.status(500).json({ error: 'Failed to fetch deposit' });
+                }
+
+                if (selectResults.length === 0) {
+                    return res.status(404).json({ message: 'Deposit not found' });
+                }
+
+                const deposit = selectResults[0];
+
+                connection.query(
+                    'UPDATE deposite SET status = 1 WHERE id = ?',
+                    [id],
+                    (updateError, updateResults) => {
+                        if (updateError) {
+                            console.error('Error updating deposit:', updateError);
+                            return res.status(500).json({ error: 'Failed to update deposit' });
+                        }
+                        connection.query(
+                            'INSERT INTO withdraw (transaction_id, amount, status, user_id) VALUES (?, ?, ?, ?)',
+                            [deposit.transation_id, deposit.amount, 0, deposit.user_id],
+                            (insertError, insertResults) => {
+                                if (insertError) {
+                                    console.error('Error inserting withdrawal:', insertError);
+                                    return res.status(500).json({ error: 'Failed to create withdrawal' });
+                                }
+                                res.status(201).json({ statusCode: "201", message: 'Deposit approved  successfully' });
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    } catch (error) {
+        console.error('Error in approveDepositRequest:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+export const getUserwithdrawn = async (req, res) => {
+    try {
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        connection.query(
+            'SELECT * FROM withdraw WHERE user_id=?',[user_id],
             (error, results) => {
                 if (error) {
-                    return res.status(500).json({ error: 'Failed deposite' });
+                    return res.status(500).json({ error: 'Failed to fetch users' });
                 }
-                console.log('Kyc created successfully');
-                res.status(201).json({ statusCode: "201", message: 'deposit approved successfully' });
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
             }
         );
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+export const getWithdrawn = async (req, res) => {
+    try {
+        connection.query(
+            'SELECT * FROM withdraw',
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed to fetch users' });
+                }
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No found data" });
+                }
+
+                res.status(200).json({statusCode:"200",data:results});
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+// >>>>>>>>>>>>>>>>>>>.
+
 // export const logout = async (req, res) => {
 //     const token = req.body.token;
 

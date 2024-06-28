@@ -1,6 +1,7 @@
 import express from "express";
 import { create, deleteUser, getAll, getOne, update, login,createkYC,getAllKYC,
-    addDeposite,allDeposites,approveDepositRequest,getUserDeposits,getSingleKYC } from "../controller/usercontroller.js";
+    addDeposite,allDeposites,approveDepositRequest,getUserDeposits,getSingleKYC,
+    getUserwithdrawn,getWithdrawn } from "../controller/usercontroller.js";
 import { verifyToken, isAdmin } from '../middleware/middleware.js';
 
 // create api
@@ -23,5 +24,7 @@ route.post("/add-deposit",[verifyToken], addDeposite);
 route.get("/deposits",[verifyToken], allDeposites)
 route.get("/user-deposits",[verifyToken], getUserDeposits)
 route.post("/approve-deposit-request",[verifyToken], approveDepositRequest);
+route.get("/user-withdrawn",[verifyToken], getUserwithdrawn)
+route.get("/withdrawn",[verifyToken], getWithdrawn)
 // route.post("/logout",[verifyToken], logout);
 export default route;
