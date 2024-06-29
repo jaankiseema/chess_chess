@@ -126,10 +126,10 @@ const DashboardMenu = () => {
     };
 
     return (
-        <div className='row bg-gray-800 h-screen' style={{ background: '#1f2937' }}>
+        <div className='row ' style={{ background: '#1f2937' }}>
             <div className='col-sm-2'>
                 <div className="flex">
-                    <div className="md:hidden flex items-center justify-between p-4 w-full bg-gray-900">
+                    <div className="md:hidden flex items-center justify-between p-4 w-full ">
                         <Button type="primary" onClick={showDrawer} icon={<MenuOutlined />} />
                     </div>
                     <div className="hidden md:flex flex-col w-64 h-full">
