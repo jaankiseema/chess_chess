@@ -1,8 +1,8 @@
 import express from "express";
 import { create, deleteUser, getAll, getOne, update, login,createkYC,getAllKYC,
     addDeposite,allDeposites,approveDepositRequest,getUserDeposits,getSingleKYC,
-    getUserwithdrawn,getWithdrawn, addfond,approveFondRequest } from "../controller/usercontroller.js";
-import { verifyToken, isAdmin } from '../middleware/middleware.js';
+    getUserwithdrawn,getWithdrawn, addfond,approveFondRequest,logout } from "../controller/usercontroller.js";
+import { verifyToken } from '../middleware/middleware.js';
 
 // create api
 const route = express.Router();
@@ -28,5 +28,6 @@ route.get("/user-withdrawn",[verifyToken], getUserwithdrawn)
 route.get("/withdrawn",[verifyToken], getWithdrawn)
 route.post("/add-fond",[verifyToken], addfond);
 route.post("/approve-fond-request",[verifyToken], approveFondRequest);
-// route.post("/logout",[verifyToken], logout);
+route.post("/logout", logout);
+
 export default route;
