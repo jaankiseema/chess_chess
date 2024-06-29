@@ -2,7 +2,7 @@ import express from "express";
 import { create, deleteUser, getAll, getOne, update, login,createkYC,getAllKYC,
     addDeposite,allDeposites,approveDepositRequest,getUserDeposits,getSingleKYC,
     getUserwithdrawn,getWithdrawn, addfond,approveFondRequest,logout } from "../controller/usercontroller.js";
-import { verifyToken } from '../middleware/middleware.js';
+import { isAdmin, verifyToken } from '../middleware/middleware.js';
 
 // create api
 const route = express.Router();
