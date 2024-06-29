@@ -183,7 +183,6 @@ export const getAll = async (req, res) => {
     }
 };
 
-
 export const getOne = async (req, res) => {
     try {
         const id = req.params.id;
@@ -616,30 +615,27 @@ export const approveFondRequest = async (req, res) => {
     }
 };
 
+export const logout = async (req, res) => {
+    const token = req.body.token;
 
-// >>>>>>>>>>>>>>>>>>>.
+    if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+    }
 
-// export const logout = async (req, res) => {
-//     const token = req.body.token;
+    let decoded;
+    try {
+        decoded = jwt.verify(token, 'your_jwt_secret');
+    } catch (err) {
+        return res.status(400).json({ message: 'Invalid token' });
+    }
 
-//     if (!token) {
-//         return res.status(400).json({ message: 'Token is required' });
-//     }
+    const userId = decoded.id;
 
-//     let decoded;
-//     try {
-//         decoded = jwt.verify(token, 'your_jwt_secret');
-//     } catch (err) {
-//         return res.status(400).json({ message: 'Invalid token' });
-//     }
-
-//     const userId = decoded.id;
-
-//     const query = 'INSERT INTO logout (user_id, token) VALUES (?, ?)';
-//     connection.query(query, [userId, token], (err, results) => {
-//         if (err) {
-//             return res.status(500).json({ message: 'Database error', error: err });
-//         }
-//         res.status(200).json({ message: 'Logged out successfully' });
-//     });
-// };
+    const query = 'INSERT INTO logout (user_id, token) VALUES (?, ?)';
+    connection.query(query, [userId, token], (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+        res.status(200).json({ message: 'Logged out successfully' });
+    });
+};
