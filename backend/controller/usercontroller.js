@@ -128,7 +128,7 @@ export const createkYC = async (req, res) => {
     try {
         const { email_id, password, account_holder_name, account_number, confirm_account_number, ifsc_code, bank_name, branch } = req.body;
         // Perform validation if necessary
-        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        const user_id = 0; //jwt.decode(req.headers.authorization.split(' ')[1]).id;
         if (!email_id || !password || !account_holder_name || !account_number || !confirm_account_number || !ifsc_code || !bank_name || !branch) {
             return res.status(400).json({ msg: 'All filed are required ' });
         }
