@@ -128,6 +128,7 @@ export const createkYC = async (req, res) => {
     try {
         const { email_id, password, account_holder_name, account_number, confirm_account_number, ifsc_code, bank_name, branch } = req.body;
         // Perform validation if necessary
+        // const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
         const user_id = 0; //jwt.decode(req.headers.authorization.split(' ')[1]).id;
         if (!email_id || !password || !account_holder_name || !account_number || !confirm_account_number || !ifsc_code || !bank_name || !branch) {
             return res.status(400).json({ msg: 'All filed are required ' });
@@ -683,8 +684,8 @@ export const getUsertransation = async (req, res) => {
                 res.status(200).json({
                     statusCode: "200",
                     data: {
-                        user_name:results[0].name,
-                        email:results[0].email,
+                        user_name: results[0].name,
+                        email: results[0].email,
                         remaning_fond: results[0].remaning_fond,
                         request_fond: results[0].request_fond,
                         total_Withdrawal_today: results[0].total_withdraw_today,
