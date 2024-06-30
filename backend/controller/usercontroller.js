@@ -40,46 +40,21 @@ export const login = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 export const create = async (req, res) => {
     try {
-        const { username, email, password, role, user_ref_id } = req.body;
-
-        // Perform validation if necessary
-        if (!username || !email || !password) {
-            return res.status(400).json({ msg: 'Username, email, and password are required' });
+	const { username, email, password, role, user_ref_id } = req.body;
+	if (!username || !email || !password || !user_ref_id) {
+            return res.status(400).json({ msg: 'All fields are required' });
         }
         const userRole = role || 'user';
-
-        // Generate reference ID
+		 // Generate reference ID
         const generateRefId = () => {
             const randomSixDigit = Math.floor(100000 + Math.random() * 900000).toString();
             return `chess${randomSixDigit}`;
         };
 
-        // Check if the provided user_ref_id exists
-        const checkRefId = () => {
-            return new Promise((resolve, reject) => {
-                connection.query(
-                    'SELECT * FROM users WHERE ref_id = ?',
-                    [user_ref_id],
-                    (refError, refResults) => {
-                        if (refError) {
-                            console.error('Error checking ref_id:', refError);
-                            return reject('Failed to check ref_id');
-                        }
-                        if (refResults.length === 0) {
-                            return resolve(null);
-                        }
-                        resolve(user_ref_id);
-                    }
-                );
-            });
-        };
-
-        let referenceId = await checkRefId();
-        if (!referenceId) {
-            referenceId = generateRefId();
-        }
+        const referenceId = generateRefId();
 
         // Check if the email already exists
         connection.query(
@@ -93,28 +68,42 @@ export const create = async (req, res) => {
                 if (results.length > 0) {
                     return res.status(400).json({ error: 'Email already in use' });
                 }
-
-                // Hash the password
-                try {
-                    const hashedPassword = await bcrypt.hash(password, 10);
-
-                    // Insert user data into MySQL
-                    connection.query(
-                        'INSERT INTO users (name, email, password, role, ref_id) VALUES (?, ?, ?, ?, ?)',
-                        [username, email, hashedPassword, userRole, referenceId],
-                        (insertError, insertResults) => {
-                            if (insertError) {
-                                console.error('Error inserting user:', insertError);
-                                return res.status(500).json({ error: 'Failed to create user' });
-                            }
-                            console.log('User created successfully');
-                            res.status(201).json({ statusCode: "201", message: 'User created successfully' });
+ // Check if the provided user_ref_id exists
+                connection.query(
+                    'SELECT * FROM users WHERE ref_id = ?',
+                    [user_ref_id],
+                    async (refError, refResults) => {
+                        if (refError) {
+                            console.error('Error checking ref_id:', refError);
+                            return res.status(500).json({ error: 'Failed to check ref_id' });
                         }
-                    );
-                } catch (hashError) {
-                    console.error('Error hashing password:', hashError);
-                    res.status(500).json({ error: 'Failed to hash password' });
-                }
+						  if (refResults.length === 0) {
+                            return res.status(400).json({ error: 'Invalid referral ID' });
+                        }
+
+                        // Hash the password
+                        try {
+                            const hashedPassword = await bcrypt.hash(password, 10);
+
+                            // Insert user data into MySQL
+                            connection.query(
+                                'INSERT INTO users (name, email, password, role, ref_id) VALUES (?, ?, ?, ?, ?)',
+                                [username, email, hashedPassword, userRole, referenceId],
+                                (insertError, insertResults) => {
+                                    if (insertError) {
+                                        console.error('Error inserting user:', insertError);
+                                        return res.status(500).json({ error: 'Failed to create user' });
+                                    }
+                                    console.log('User created successfully');
+                                    res.status(201).json({ statusCode: "201", message: 'User created successfully' });
+                                }
+                            );
+                        } catch (hashError) {
+                            console.error('Error hashing password:', hashError);
+                            res.status(500).json({ error: 'Failed to hash password' });
+                        }
+                    }
+                );
             }
         );
 
@@ -123,6 +112,89 @@ export const create = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// export const create = async (req, res) => {
+//     try {
+//         const { username, email, password, role, user_ref_id } = req.body;
+
+//         // Perform validation if necessary
+//         if (!username || !email || !password) {
+//             return res.status(400).json({ msg: 'Username, email, and password are required' });
+//         }
+//         const userRole = role || 'user';
+
+//         // Generate reference ID
+//         const generateRefId = () => {
+//             const randomSixDigit = Math.floor(100000 + Math.random() * 900000).toString();
+//             return `chess${randomSixDigit}`;
+//         };
+
+//         // Check if the provided user_ref_id exists
+//         const checkRefId = () => {
+//             return new Promise((resolve, reject) => {
+//                 connection.query(
+//                     'SELECT * FROM users WHERE ref_id = ?',
+//                     [user_ref_id],
+//                     (refError, refResults) => {
+//                         if (refError) {
+//                             console.error('Error checking ref_id:', refError);
+//                             return reject('Failed to check ref_id');
+//                         }
+//                         if (refResults.length === 0) {
+//                             return resolve(null);
+//                         }
+//                         resolve(user_ref_id);
+//                     }
+//                 );
+//             });
+//         };
+
+//         let referenceId = await checkRefId();
+//         if (!referenceId) {
+//             referenceId = generateRefId();
+//         }
+
+//         // Check if the email already exists
+//         connection.query(
+//             'SELECT * FROM users WHERE email = ?',
+//             [email],
+//             async (error, results) => {
+//                 if (error) {
+//                     console.error('Error checking email:', error);
+//                     return res.status(500).json({ error: 'Failed to check email' });
+//                 }
+//                 if (results.length > 0) {
+//                     return res.status(400).json({ error: 'Email already in use' });
+//                 }
+
+//                 // Hash the password
+//                 try {
+//                     const hashedPassword = await bcrypt.hash(password, 10);
+
+//                     // Insert user data into MySQL
+//                     connection.query(
+//                         'INSERT INTO users (name, email, password, role, ref_id) VALUES (?, ?, ?, ?, ?)',
+//                         [username, email, hashedPassword, userRole, referenceId],
+//                         (insertError, insertResults) => {
+//                             if (insertError) {
+//                                 console.error('Error inserting user:', insertError);
+//                                 return res.status(500).json({ error: 'Failed to create user' });
+//                             }
+//                             console.log('User created successfully');
+//                             res.status(201).json({ statusCode: "201", message: 'User created successfully' });
+//                         }
+//                     );
+//                 } catch (hashError) {
+//                     console.error('Error hashing password:', hashError);
+//                     res.status(500).json({ error: 'Failed to hash password' });
+//                 }
+//             }
+//         );
+
+//     } catch (error) {
+//         console.error('Error creating user:', error);
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 export const createkYC = async (req, res) => {
     try {
