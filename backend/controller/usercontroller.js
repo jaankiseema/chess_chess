@@ -661,7 +661,7 @@ export const getUsertransation = async (req, res) => {
 
         connection.query(
             `SELECT 
-                u.fond AS remaning_fond,
+                u.name,u.email,u.fond AS remaning_fond,
                 COALESCE(SUM(CASE WHEN w.status = 1 AND DATE(w.date) = ? THEN w.amount ELSE 0 END), 0) AS total_withdraw_today,
                 COALESCE(SUM(CASE WHEN w.status = 0 THEN w.amount ELSE 0 END), 0) AS total_request_fond
              FROM 
@@ -684,9 +684,11 @@ export const getUsertransation = async (req, res) => {
                 res.status(200).json({
                     statusCode: "200",
                     data: {
+                        user_name:results[0].name,
+                        email:results[0].email,
                         remaning_fond: results[0].remaning_fond,
                         request_fond: results[0].request_fond,
-                        total_withdraw_today: results[0].total_withdraw_today,
+                        total_Withdrawal_today: results[0].total_withdraw_today,
                         total_request_fond: results[0].total_request_fond
                     }
                 });
