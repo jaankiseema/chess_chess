@@ -461,11 +461,11 @@ export const approveDepositRequest = async (req, res) => {
 };
 export const addfond = async (req, res) => {
     try {
-        const { transation_id, amount } = req.body;
+        const { amount } = req.body;
         const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
         const status = 0;
 
-        if (!transation_id || !amount) {
+        if (!amount) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -493,8 +493,8 @@ export const addfond = async (req, res) => {
                 }
 
                 connection.query(
-                    'INSERT INTO withdraw (transaction_id, amount, status, user_id) VALUES (?, ?, ?, ?)',
-                    [transation_id, amount, status, user_id],
+                    'INSERT INTO withdraw (amount, status, user_id) VALUES (?, ?, ?)',
+                    [amount, status, user_id],
                     (insertError, insertResults) => {
                         if (insertError) {
                             console.error('Error inserting deposit request:', insertError);
@@ -651,7 +651,6 @@ export const logout = async (req, res) => {
 export const getUsertransation = async (req, res) => {
     try {
         const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
-        
         // Get today's date in 'YYYY-MM-DD' format
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -688,6 +687,54 @@ export const getUsertransation = async (req, res) => {
                         email:results[0].email,
                         remaning_fond: results[0].remaning_fond,
                         request_fond: results[0].request_fond,
+                        total_Withdrawal_today: results[0].total_withdraw_today,
+                        total_request_fond: results[0].total_request_fond
+                    }
+                });
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+export const gettransation = async (req, res) => {
+    try {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        connection.query(
+            `SELECT 
+            SUM(remaning_fond) AS total_remaning_fond,
+            SUM(total_withdraw_today) AS total_withdraw_today,
+            SUM(total_request_fond) AS total_request_fond
+        FROM (
+            SELECT 
+                u.fond AS remaning_fond,
+                COALESCE(SUM(CASE WHEN w.status = 1 AND DATE(w.date) = ? THEN w.amount ELSE 0 END), 0) AS total_withdraw_today,
+                COALESCE(SUM(CASE WHEN w.status = 0 THEN w.amount ELSE 0 END), 0) AS total_request_fond
+            FROM 
+                users u
+            LEFT JOIN 
+                withdraw w ON u.id = w.user_id AND (w.status = 0 OR w.status = 1)
+            GROUP BY u.id
+        ) AS subquery_alias;
+        `,
+            [todayStr],
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed to fetch data' });
+                }
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No data found" });
+                }
+
+                res.status(200).json({
+                    statusCode: "200",
+                    data: {
+                        remaning_fond: results[0].total_remaning_fond,
                         total_Withdrawal_today: results[0].total_withdraw_today,
                         total_request_fond: results[0].total_request_fond
                     }
