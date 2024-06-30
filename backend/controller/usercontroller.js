@@ -647,3 +647,52 @@ export const logout = async (req, res) => {
         res.status(200).json({ message: 'Logged out successfully' });
     });
 };
+// user transation details 
+export const getUsertransation = async (req, res) => {
+    try {
+        const user_id = jwt.decode(req.headers.authorization.split(' ')[1]).id;
+        
+        // Get today's date in 'YYYY-MM-DD' format
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        connection.query(
+            `SELECT 
+                u.fond AS remaning_fond,
+                COALESCE(SUM(CASE WHEN w.status = 1 AND DATE(w.date) = ? THEN w.amount ELSE 0 END), 0) AS total_withdraw_today,
+                COALESCE(SUM(CASE WHEN w.status = 0 THEN w.amount ELSE 0 END), 0) AS total_request_fond
+             FROM 
+                users u
+             LEFT JOIN 
+                withdraw w ON u.id = w.user_id AND (w.status = 0 OR w.status = 1)
+             WHERE 
+                u.id = ?
+             GROUP BY 
+                u.id`,
+            [todayStr, user_id],
+            (error, results) => {
+                if (error) {
+                    return res.status(500).json({ error: 'Failed to fetch data' });
+                }
+                if (results.length === 0) {
+                    return res.status(404).json({ message: "No data found" });
+                }
+
+                res.status(200).json({
+                    statusCode: "200",
+                    data: {
+                        remaning_fond: results[0].remaning_fond,
+                        request_fond: results[0].request_fond,
+                        total_withdraw_today: results[0].total_withdraw_today,
+                        total_request_fond: results[0].total_request_fond
+                    }
+                });
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
