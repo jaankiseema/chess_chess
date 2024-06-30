@@ -127,7 +127,10 @@ const LogInForm = () => {
     console.log(apiRes);
 
     if (apiRes.status === 200) {
+      const data = await apiRes.json();
       console.log("User logged in successfully");
+      localStorage.setItem('token', data.token);
+      console.log("token as ..",data.token)
       // navigate("/settingdash2"); // Navigate to the desired page after successful login
       navigate("/dashboardheader");
     } else {
