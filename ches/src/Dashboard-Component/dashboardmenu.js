@@ -111,10 +111,10 @@
 // export default Dashboardmenu
 import React, { useState } from 'react';
 import { Layout, Menu, Drawer, Button } from 'antd';
-import { Link } from 'react-router-dom';
-import { MenuOutlined } from '@ant-design/icons';
-
+import { Link,useNavigate } from 'react-router-dom';
+import { MenuOutlined } from '@ant-design/icons'; 
 const DashboardMenu = () => {
+    const navigate = useNavigate();
     const [visible, setVisible] = useState(false);
 
     const showDrawer = () => {
@@ -124,7 +124,36 @@ const DashboardMenu = () => {
     const onClose = () => {
         setVisible(false);
     };
+    const handleLogout = async (e) => {
+        e.preventDefault();
+console.log("logout ....")
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
 
+        try {
+            const apiRes = await fetch("http://localhost:7000/api/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    token: token,
+                }),
+            });
+
+            if (apiRes.status === 200) {
+                localStorage.removeItem('token');
+                navigate('/account/login');
+            } else {
+                console.error('Error during logout:', await apiRes.json());
+            }
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
     return (
         <div className='row ' style={{ background: '#1f2937' }}>
             <div className='col-sm-2'>
@@ -164,7 +193,7 @@ const DashboardMenu = () => {
                                     <i className="bi bi-gear text-white mx-2"></i>
                                     <Link to="/profildash2" className='text-white' style={{ textDecoration: 'none' }}>Setting</Link>
                                 </p>
-                                <a href="#" className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
+                                <a href="#" onClick={handleLogout} className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-box-arrow-right mx-2"></i>
                                     Logout
                                 </a>
