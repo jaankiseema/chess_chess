@@ -12,32 +12,32 @@ const MobileHeader = ({ showSidebar }) => {
   return (
     <div className={styles.header}>
       <div className="d-flex align-items-center">
-        <button
+        {/* <button
           type="button"
           className={styles.menuBtn}
           onClick={() => showSidebar(true)}
         >
           <FaBars />
-        </button>
-        <h1 className={styles.brand}>Chess Arena</h1>
+        </button> */}
+        {/* <h1 className={styles.brand}>Chess Arena</h1> */}
       </div>
       {/* {user ? ( */}
-      <button
+      {/* <button
         type="button"
         className={styles.btn}
         // onClick={() => signOut(auth)}
         style={{ backgroundColor: 'var(--bs-red)' }}
       >
         <BiLogOut />
-      </button>
+      </button> */}
       {/* ) : ( */}
-      <Link
+      {/* <Link
         to="/account/login"
         className={styles.btn}
         style={{ backgroundColor: 'var(--bs-green)' }}
       >
         <BiLogIn />
-      </Link>
+      </Link> */}
       {/* )} */}
     </div>
   );
