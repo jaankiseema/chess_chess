@@ -96,6 +96,7 @@ import Setting from "./Dashboard-Component/setting.js";
 import Translate from "./Dashboard-Component/translate.js";
 import Settingdash2 from "./Dashboard-Component/settingdash2.js";
 import Profildash2 from "./Dashboard-Component/profildash2.js";
+import Dasprofile from "./components/dasprofile.js";
 
 function App() {
   const location = useLocation();
@@ -122,8 +123,8 @@ function App() {
     "/adminwithdrow",
     "/admindeposit",
     "/settingdash2",
-    "/profildash2"
-
+    "/profildash2",
+    "/Dasprofile"
 
   ];
 
@@ -173,6 +174,7 @@ function App() {
             <Route path="signup" element={<SignUpForm />} />
           </Route>
           <Route path="/forget" element={<ForgetSection />} />
+          <Route path="/dasprofile" element={<Dasprofile />} />
         </Routes>
       </div>
     </div >

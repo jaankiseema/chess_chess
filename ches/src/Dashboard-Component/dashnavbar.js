@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Dashnavbar = () => {
     return (
@@ -9,7 +10,7 @@ const Dashnavbar = () => {
                 <div className='col-sm-2 flex text-white'>
 
                     <img src='notif.png' style={{ height: '25px' }} />
-                    <span><img src='profil.png' className="mx-2" style={{ height: '25px' }} /></span>
+                    <Link to="/Dasprofile"><img src='profil.png' className="mx-2" style={{ height: '25px' }} /></Link>
                 </div>
 
             </div>
