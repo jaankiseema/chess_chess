@@ -47,11 +47,8 @@ const Profile = () => {
                     <Adminnavigate />
                     <div className="container mt-5">
                         <div className="card bg-dark text-white">
-                            <div className="card-body h-96">
-                                <div className="row">
-                                    <div className="col-sm-4">
-                                        <img src="profil.png" alt="Profile Picture" className="rounded-circle w-50 mb-3" />
-                                        <h4>My Profile</h4>
+                            
+                                        
                                         {userData ? (
                                             <div>
                                                 <p><strong>Name:</strong> {userData.name}</p>
@@ -63,21 +60,10 @@ const Profile = () => {
                                         ) : (
                                             <p>Loading...</p>
                                         )}
-                                    </div>
-                                    <div className="col-md-8">
-                                        <h3 className="card-title">Gamer Tag: <span className="text-warning">PlayerOne</span></h3>
-                                        <p className="card-text">Level: <span className="text-info">42</span></p>
-                                        <p className="card-text">Achievements:</p>
-                                        <ul className="list-unstyled">
-                                            <li>🏆 <span className="text-success">Victory Royale</span></li>
-                                            <li>🏆 <span className="text-success">Sharp Shooter</span></li>
-                                            <li>🏆 <span className="text-success">Master Builder</span></li>
-                                        </ul>
-                                        <button className="bootstrap-btn">Follow</button>
-                                        <button className="tailwind-btn mx-2">Message</button>
-                                    </div>
-                                </div>
-                            </div>
+                                    
+                                    
+                                
+                            
                         </div>
                     </div>
                 </div>
