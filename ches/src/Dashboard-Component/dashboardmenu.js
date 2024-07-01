@@ -167,12 +167,12 @@ const DashboardMenu = () => {
                         </div>
                         <div className="flex h-screen flex-col flex-1 overflow-y-auto">
                             <nav className="flex-1 h-screen">
-                                <p className="flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700">
+                                {/* <p className="flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                                     </svg>
                                     <Link to='/admindashborad' style={{ textDecoration: 'none', color: 'white' }}>Admin Dashboard</Link>
-                                </p>
+                                </p> */}
                                 <p className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-graph-up-arrow mx-2"></i>
                                     <Link to='/Dashincome' style={{ textDecoration: 'none', color: 'white' }}>Income</Link>
@@ -189,11 +189,11 @@ const DashboardMenu = () => {
                                     <i className="bi bi-arrow-repeat text-2xl text-white mx-2"></i>
                                     <Link to="/settingdash2" className='text-white' style={{ textDecoration: 'none' }}>Deposit</Link>
                                 </p>
-                                <p className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
+                                {/* <p className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-gear text-white mx-2"></i>
                                     <Link to="/profildash2" className='text-white' style={{ textDecoration: 'none' }}>Setting</Link>
-                                </p>
-                                
+                                </p> */}
+
                                 <a href="#" onClick={handleLogout} className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-box-arrow-right mx-2"></i>
                                     Logout
