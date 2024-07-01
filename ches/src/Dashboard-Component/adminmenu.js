@@ -93,7 +93,7 @@ const Adminmenu = () => {
                         </li>
                         <li className='mt-4'>
                             <i class="bi bi-gear text-white text-xl"></i>
-                            <Link to="/setting" style={{ textDecoration: 'none' }}> <span class="flex-1 ms-3 whitespace-nowrap text-white">Setting</span></Link>
+                            <Link to="/dashboardheader" style={{ textDecoration: 'none' }}> <span class="flex-1 ms-3 whitespace-nowrap text-white">Switch User</span></Link>
 
 
 

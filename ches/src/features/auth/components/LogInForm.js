@@ -123,7 +123,7 @@ const LogInForm = () => {
       const userRole = decodedToken.role;
 
       if (userRole === 'admin') {
-        navigate("/admindeposit");
+        navigate("/admin");
       } else if (userRole === 'user') {
         navigate("/dashboardheader");
       } else {
@@ -177,9 +177,9 @@ const LogInForm = () => {
             <div style={{ width: "200px" }}>
               <Link to="/account/signup">SIGN UP</Link>
             </div>
-            <div>
+            {/* <div>
               <Link to="/forget">Forget Password</Link>
-            </div>
+            </div> */}
           </div>
         </Form>
       </Container>

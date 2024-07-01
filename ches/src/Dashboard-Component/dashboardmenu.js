@@ -193,6 +193,7 @@ const DashboardMenu = () => {
                                     <i className="bi bi-gear text-white mx-2"></i>
                                     <Link to="/profildash2" className='text-white' style={{ textDecoration: 'none' }}>Setting</Link>
                                 </p>
+                                
                                 <a href="#" onClick={handleLogout} className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-box-arrow-right mx-2"></i>
                                     Logout
