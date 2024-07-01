@@ -246,7 +246,7 @@ const Dashboardheader = () => {
                                 <div className='p-3'>
                                     <div className='text-center'>
                                         <h4>Wallet Balance</h4>
-                                        <h2>{userData.remaining_fund}</h2>
+                                        <h2>{userData.remaining_fund} Rs.</h2>
                                     </div>
                                 </div>
                             </Card>
@@ -255,8 +255,8 @@ const Dashboardheader = () => {
                             <Card className='shadow' style={{ background: '#790000', color: 'white' }}>
                                 <div className='p-3'>
                                     <div className='text-center'>
-                                        <h4>Total Income</h4>
-                                        <h2>{userData.total_request_fund}</h2>
+                                        <h4>total_request_fond</h4>
+                                        <h2>{userData.total_request_fund} Rs.</h2>
                                     </div>
                                 </div>
                             </Card>
@@ -265,8 +265,8 @@ const Dashboardheader = () => {
                             <Card className='shadow' style={{ background: '#6C0CAC', color: 'white' }}>
                                 <div className='p-3'>
                                     <div className='text-center'>
-                                        <h4>Today Income</h4>
-                                        <h2>{userData.total_withdrawal_today}</h2>
+                                        <h4>total_Withdrawal_today</h4>
+                                        <h2>{userData.total_withdrawal_today} Rs.</h2>
                                     </div>
                                 </div>
                             </Card>

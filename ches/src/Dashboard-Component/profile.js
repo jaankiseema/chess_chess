@@ -1,11 +1,42 @@
-import React from 'react'
-import Adminmenu from './adminmenu'
-import Dashnavbar from './dashnavbar'
-import AllUser from '../components/AllUser'
-import Adminnavigate from './adminnavigate'
-import { Button } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react';
+import Adminmenu from './adminmenu';
+import Dashnavbar from './dashnavbar';
+import Adminnavigate from './adminnavigate';
+import axios from 'axios'; // Import Axios for HTTP requests
+import {jwtDecode} from 'jwt-decode'; // Correct import for jwtDecode
 
 const Profile = () => {
+    const [userData, setUserData] = useState(null); // State to store user data
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Get the authorization token from localStorage
+                if (token) {
+                    const decodedToken = jwtDecode(token); // Decode the token to get user data
+                    const userId = decodedToken.id; // Assuming the token contains the user ID as 'id'
+                    
+                    // Make GET request to fetch user data
+                    const response = await axios.get(`http://localhost:7000/api/getone/${userId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}` // Include authorization token in headers
+                        }
+                    });
+                    console.log("Response data:", response.data);
+                    setUserData(response.data); // Set user data from API response
+                } else {
+                    // Handle case where token is not found in localStorage
+                    console.log('Authorization token not found');
+                }
+            } catch (error) {
+                // Handle error
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchData(); // Invoke fetchData function on component mount
+    }, []);
+
     return (
         <div className='container-fluid'>
             <div className='row'>
@@ -14,54 +45,45 @@ const Profile = () => {
                 </div>
                 <div className='col-sm-10'>
                     <Adminnavigate />
-                    {/* <AllUser /> */}
-                    <div class="container mt-5">
-
-                        <div class="card bg-dark text-white ">
-                            <div class="card-body h-96">
-                                <div class="row">
-                                    <div class="col-sm-4 ">
-                                        <img src="profil.png" alt="Profile Picture" class="rounded-circle w-50 mb-3" />
-
-                                        My Profile
-                                        <div>
-
-                                            <input type="text" id="small-input" class="block w-full p-2 mt-3  text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500  dark:bg-gray-700 dark:border-gray-600  dark:text-white  " placeholder='Enter Ypur Email' />
-                                        </div>
-                                        <p className='bg-warning p-2 rounded-sm mt-2'>verficaton code</p>
-
-
-
+                    <div className="container mt-5">
+                        <div className="card bg-dark text-white">
+                            <div className="card-body h-96">
+                                <div className="row">
+                                    <div className="col-sm-4">
+                                        <img src="profil.png" alt="Profile Picture" className="rounded-circle w-50 mb-3" />
+                                        <h4>My Profile</h4>
+                                        {userData ? (
+                                            <div>
+                                                <p><strong>Name:</strong> {userData.name}</p>
+                                                <p><strong>Email:</strong> {userData.email}</p>
+                                                <p><strong>Role:</strong> {userData.role}</p>
+                                                <p><strong>Ref ID:</strong> {userData.ref_id}</p>
+                                                <p><strong>Remaining Funds:</strong> {userData.fond}</p>
+                                            </div>
+                                        ) : (
+                                            <p>Loading...</p>
+                                        )}
                                     </div>
-                                    <div class="col-md-8">
-                                        <h3 class="card-title">Gamer Tag: <span class="text-warning">PlayerOne</span></h3>
-                                        <p class="card-text">Level: <span class="text-info">42</span></p>
-                                        <p class="card-text">Achievements:</p>
-                                        <ul class="list-unstyled">
-                                            <li>🏆 <span class="text-success">Victory Royale</span></li>
-                                            <li>🏆 <span class="text-success">Sharp Shooter</span></li>
-                                            <li>🏆 <span class="text-success">Master Builder</span></li>
+                                    <div className="col-md-8">
+                                        <h3 className="card-title">Gamer Tag: <span className="text-warning">PlayerOne</span></h3>
+                                        <p className="card-text">Level: <span className="text-info">42</span></p>
+                                        <p className="card-text">Achievements:</p>
+                                        <ul className="list-unstyled">
+                                            <li>🏆 <span className="text-success">Victory Royale</span></li>
+                                            <li>🏆 <span className="text-success">Sharp Shooter</span></li>
+                                            <li>🏆 <span className="text-success">Master Builder</span></li>
                                         </ul>
-                                        <button class="bootstrap-btn">Follow</button>
-                                        <button class="tailwind-btn mx-2">Message</button>
+                                        <button className="bootstrap-btn">Follow</button>
+                                        <button className="tailwind-btn mx-2">Message</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-
-
-
-
-
                     </div>
                 </div>
-
             </div>
         </div>
-
-
     )
 }
 
-export default Profile
+export default Profile;
