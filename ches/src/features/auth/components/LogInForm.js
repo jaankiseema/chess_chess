@@ -1,21 +1,18 @@
-// import React, { useRef, useState } from "react";
-// // import { auth } from '../../../firebase';
+
+
+// import React, { useState } from "react";
 // import { Button, Container, Form } from "react-bootstrap";
-// import { Link, Navigate, redirect } from "react-router-dom";
-// // import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-// import Toastr from "../../../components/Toastr";
-// import Dashboardheader from "../../../Dashboard-Component/dashboardheader";
-// import { Flex } from "antd";
+// import { Link, useNavigate } from "react-router-dom";
 
 // const LogInForm = () => {
+//   const navigate = useNavigate(); // Initialize useNavigate hook
 //   const [email, setEmail] = useState("");
 //   const [password, setPassword] = useState("");
 
 //   const handleLogIn = async (e) => {
 //     e.preventDefault();
 
-//     // const apiRes = await fetch('http://localhost:8081/auths/signin', {
-//     const apiRes = await fetch("http://localhost:5000/login", {
+//     const apiRes = await fetch("http://localhost:7000/api/login", {
 //       method: "POST",
 //       headers: {
 //         "Content-Type": "application/json",
@@ -28,21 +25,17 @@
 
 //     console.log(apiRes);
 
-//     if (apiRes.status === 201) {
-//       console.log("hellow world");
-//       return <Navigate to="/" replace />;
+//     if (apiRes.status === 200) {
+//       const data = await apiRes.json();
+//       console.log("User logged in successfully");
+//       localStorage.setItem('token', data.token);
+//       console.log("token as ..",data.token)
+//       // navigate("/settingdash2"); // Navigate to the desired page after successful login
+//       navigate("/dashboardheader");
 //     } else {
+//       console.log("Error logging in");
+//       // Handle unsuccessful login
 //     }
-
-//     // if (apiRes) {
-//     //   const res = await apiRes.json()
-//     //   window.location.href = '/Dashboardheader'
-//     //   console.log("Api response login -->", res);
-//     // }
-
-//     // if (email == "seema@gmail.com" && passwo rd == "1234") {
-//     //   window.location.href = '/Dashboardheader'
-//     // }
 //   };
 
 //   return (
@@ -64,7 +57,6 @@
 //               onChange={(e) => setEmail(e.target.value)}
 //               type="email"
 //               placeholder="Email address"
-//               // ref={emailRef}
 //               required
 //             />
 //           </Form.Group>
@@ -74,7 +66,6 @@
 //               onChange={(e) => setPassword(e.target.value)}
 //               type="password"
 //               placeholder="Password"
-//               // ref={pwRef}
 //               required
 //             />
 //           </Form.Group>
@@ -104,6 +95,7 @@
 import React, { useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; // Use named import
 
 const LogInForm = () => {
   const navigate = useNavigate(); // Initialize useNavigate hook
@@ -124,15 +116,19 @@ const LogInForm = () => {
       }),
     });
 
-    console.log(apiRes);
-
     if (apiRes.status === 200) {
       const data = await apiRes.json();
-      console.log("User logged in successfully");
       localStorage.setItem('token', data.token);
-      console.log("token as ..",data.token)
-      // navigate("/settingdash2"); // Navigate to the desired page after successful login
-      navigate("/dashboardheader");
+      const decodedToken = jwtDecode(data.token); // Use jwtDecode here
+      const userRole = decodedToken.role;
+
+      if (userRole === 'admin') {
+        navigate("/admin");
+      } else if (userRole === 'user') {
+        navigate("/dashboardheader");
+      } else {
+        console.log("Unknown user role");
+      }
     } else {
       console.log("Error logging in");
       // Handle unsuccessful login
@@ -181,9 +177,9 @@ const LogInForm = () => {
             <div style={{ width: "200px" }}>
               <Link to="/account/signup">SIGN UP</Link>
             </div>
-            <div>
+            {/* <div>
               <Link to="/forget">Forget Password</Link>
-            </div>
+            </div> */}
           </div>
         </Form>
       </Container>
