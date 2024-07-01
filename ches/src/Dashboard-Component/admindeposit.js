@@ -34,6 +34,35 @@ const Admindeposit = () => {
         fetchDeposits();
     }, []);
 
+    const handleApprove = async (id) => {
+        const token = localStorage.getItem('token'); // Get the token from localStorage
+
+        try {
+            const response = await fetch('http://localhost:7000/api/approve-deposit-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Include the token in the headers
+                },
+                body: JSON.stringify({ id })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.statusCode === "201") {
+                    setDeposits(deposits.map(deposit => 
+                        deposit.id === id ? { ...deposit, status: 1 } : deposit
+                    ));
+                } else {
+                    console.error('Error approving deposit:', data.message);
+                }
+            } else {
+                console.error('Error approving deposit:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error approving deposit:', error);
+        }
+    };
 
     return (
         <div className='container-fluid'>
@@ -98,7 +127,7 @@ const Admindeposit = () => {
                                             {deposit.status === 1 ? (
                                                 <span className="text-green-600 font-bold">Approved</span>
                                             ) : deposit.status === 0 ? (
-                                                <Button variant="success" >
+                                                <Button variant="success" onClick={() => handleApprove(deposit.id)}>
                                                     Approve
                                                 </Button>
                                             ) : (

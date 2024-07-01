@@ -34,6 +34,36 @@ const Adminwithdrow = () => {
         fetchWithdrawals();
     }, []);
 
+    const handleApprove = async (id) => {
+        const token = localStorage.getItem('token'); // Get the token from localStorage
+
+        try {
+            const response = await fetch('http://localhost:7000/api/approve-fond-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Include the token in the headers
+                },
+                body: JSON.stringify({ id })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.statusCode === "201") {
+                    setWithdrawals(withdrawals.map(withdrawal =>
+                        withdrawal.id === id ? { ...withdrawal, status: 1 } : withdrawal
+                    ));
+                } else {
+                    console.error('Error approving withdrawal:', data.message);
+                }
+            } else {
+                console.error('Error approving withdrawal:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error approving withdrawal:', error);
+        }
+    };
+
     return (
         <div className='container-fluid'>
             <div className='row'>
@@ -71,7 +101,7 @@ const Adminwithdrow = () => {
                                         <td className="px-6 py-4">{withdrawal.status === 1 ? 'Approved' : 'Inactive'}</td>
                                         <td className="px-6 py-4">
                                             {withdrawal.status === 0 ? (
-                                                <Button variant="success">
+                                                <Button variant="success" onClick={() => handleApprove(withdrawal.id)}>
                                                     Approve
                                                 </Button>
                                             ) : (
