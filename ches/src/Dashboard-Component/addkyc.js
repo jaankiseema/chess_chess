@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Addkyc = () => {
+const Addkyc = ({ onKycSubmitted }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const toggleModal = () => {
-        setIsModalOpen(!isModalOpen);
-    };
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -16,8 +13,12 @@ const Addkyc = () => {
         bankName: '',
         branch: '',
     });
-
     const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
+
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -42,15 +43,45 @@ const Addkyc = () => {
         return Object.keys(formErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
-            // Submit form
-            console.log('Form submitted successfully', formData);
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch('http://localhost:7000/api/kyc', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        email_id: formData.email,
+                        password: formData.password,
+                        account_holder_name: formData.accountHolderName,
+                        account_number: formData.accountNumber,
+                        confirm_account_number: formData.confirmAccountNumber,
+                        ifsc_code: formData.ifscCode,
+                        bank_name: formData.bankName,
+                        branch: formData.branch
+                    })
+                });
+
+                const result = await response.json();
+                if (response.status === 201) {
+                    console.log('KYC created successfully:', result);
+                    toggleModal(); // Close the modal
+                    onKycSubmitted(); // Fetch updated KYC data
+                } else {
+                    console.error('Error creating KYC:', result);
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+            }
         } else {
             console.log('Form has errors', errors);
         }
     };
+
     return (
         <div>
             <div className="row mt-3">
@@ -85,7 +116,6 @@ const Addkyc = () => {
                                     <div className='col-sm-12 shadow-md p-3 mt-1 mb-5' style={{ background: 'white' }}>
                                         <form onSubmit={handleSubmit}>
                                             <div className="mb-3">
-
                                                 <input
                                                     type="email"
                                                     className={`form-control mt-2 ${errors.email ? 'is-invalid' : ''}`}
@@ -99,7 +129,7 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="password"
-                                                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.password ? 'is-invalid' : ''}`}
                                                     name="password"
                                                     placeholder='Password'
                                                     value={formData.password}
@@ -110,7 +140,7 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.accountHolderName ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.accountHolderName ? 'is-invalid' : ''}`}
                                                     name="accountHolderName"
                                                     placeholder='Account Holder Name'
                                                     value={formData.accountHolderName}
@@ -121,7 +151,7 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.accountNumber ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.accountNumber ? 'is-invalid' : ''}`}
                                                     name="accountNumber"
                                                     placeholder='Account Number'
                                                     value={formData.accountNumber}
@@ -132,9 +162,9 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.confirmAccountNumber ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.confirmAccountNumber ? 'is-invalid' : ''}`}
                                                     name="confirmAccountNumber"
-                                                    placeholder='Confirm Account No.'
+                                                    placeholder='Confirm Account Number'
                                                     value={formData.confirmAccountNumber}
                                                     onChange={handleChange}
                                                 />
@@ -143,9 +173,9 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.ifscCode ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.ifscCode ? 'is-invalid' : ''}`}
                                                     name="ifscCode"
-                                                    placeholder='Ifsc Code'
+                                                    placeholder='IFSC Code'
                                                     value={formData.ifscCode}
                                                     onChange={handleChange}
                                                 />
@@ -154,7 +184,7 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.bankName ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.bankName ? 'is-invalid' : ''}`}
                                                     name="bankName"
                                                     placeholder='Bank Name'
                                                     value={formData.bankName}
@@ -165,7 +195,7 @@ const Addkyc = () => {
                                             <div className="mb-3">
                                                 <input
                                                     type="text"
-                                                    className={`form-control ${errors.branch ? 'is-invalid' : ''}`}
+                                                    className={`form-control mt-2 ${errors.branch ? 'is-invalid' : ''}`}
                                                     name="branch"
                                                     placeholder='Branch'
                                                     value={formData.branch}
@@ -173,14 +203,9 @@ const Addkyc = () => {
                                                 />
                                                 {errors.branch && <div className="invalid-feedback">{errors.branch}</div>}
                                             </div>
-                                            {/* <div className="mb-3 form-check">
-                                                <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-
-                                            </div> */}
-                                            <button type="submit" className="btn btn-primary">Submit</button>
+                                            <button type="submit" className="btn btn-info">Submit</button>
                                         </form>
                                     </div>
-
                                 </div>
                             </div>
                         )}

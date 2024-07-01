@@ -1,55 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Dashnavbar from './dashnavbar';
-import styles from './dash.css';
 import Dashboardmenu from './dashboardmenu';
 import Addkyc from './addkyc';
+import styles from './dash.css';
 
 const Userkyc = () => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        accountHolderName: '',
-        accountNumber: '',
-        confirmAccountNumber: '',
-        ifscCode: '',
-        bankName: '',
-        branch: '',
-    });
+    const [kycData, setKycData] = useState([]);
 
-    const [errors, setErrors] = useState({});
+    const fetchKycData = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch('http://localhost:7000/api/user-kyc', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const validate = () => {
-        let formErrors = {};
-        if (!formData.email) formErrors.email = 'Email is required';
-        if (!formData.password) formErrors.password = 'Password is required';
-        if (!formData.accountHolderName) formErrors.accountHolderName = 'Account Holder Name is required';
-        if (!formData.accountNumber) formErrors.accountNumber = 'Account Number is required';
-        if (formData.accountNumber !== formData.confirmAccountNumber) formErrors.confirmAccountNumber = 'Account Numbers do not match';
-        if (!formData.ifscCode) formErrors.ifscCode = 'IFSC Code is required';
-        if (!formData.bankName) formErrors.bankName = 'Bank Name is required';
-        if (!formData.branch) formErrors.branch = 'Branch is required';
-
-        setErrors(formErrors);
-        return Object.keys(formErrors).length === 0;
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (validate()) {
-            // Submit form
-            console.log('Form submitted successfully', formData);
-        } else {
-            console.log('Form has errors', errors);
+            const result = await response.json();
+            if (response.ok) {
+                setKycData(result.data);
+            } else {
+                console.error('Error fetching KYC data:', result);
+            }
+        } catch (error) {
+            console.error('Error fetching KYC data:', error);
         }
     };
+
+    useEffect(() => {
+        fetchKycData();
+    }, []);
 
     return (
         <div>
@@ -60,108 +42,39 @@ const Userkyc = () => {
                         <Dashnavbar />
                         <div className="row" style={{ background: '#f0f0ff' }}>
                             <div className='col-sm-3'></div>
-                            {/* <div className='col-sm-5 shadow-md p-3 mt-4 mb-5' style={{ background: 'white' }}>
-                                <form onSubmit={handleSubmit}>
-                                    <div className="mb-3">
-                                        <h3 className='text-black text-center'>Kyc Form</h3>
-                                        <input
-                                            type="email"
-                                            className={`form-control mt-2 ${errors.email ? 'is-invalid' : ''}`}
-                                            name="email"
-                                            placeholder='Email Id'
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="password"
-                                            className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                                            name="password"
-                                            placeholder='Password'
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.accountHolderName ? 'is-invalid' : ''}`}
-                                            name="accountHolderName"
-                                            placeholder='Account Holder Name'
-                                            value={formData.accountHolderName}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.accountHolderName && <div className="invalid-feedback">{errors.accountHolderName}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.accountNumber ? 'is-invalid' : ''}`}
-                                            name="accountNumber"
-                                            placeholder='Account Number'
-                                            value={formData.accountNumber}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.accountNumber && <div className="invalid-feedback">{errors.accountNumber}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.confirmAccountNumber ? 'is-invalid' : ''}`}
-                                            name="confirmAccountNumber"
-                                            placeholder='Confirm Account No.'
-                                            value={formData.confirmAccountNumber}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.confirmAccountNumber && <div className="invalid-feedback">{errors.confirmAccountNumber}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.ifscCode ? 'is-invalid' : ''}`}
-                                            name="ifscCode"
-                                            placeholder='Ifsc Code'
-                                            value={formData.ifscCode}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.ifscCode && <div className="invalid-feedback">{errors.ifscCode}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.bankName ? 'is-invalid' : ''}`}
-                                            name="bankName"
-                                            placeholder='Bank Name'
-                                            value={formData.bankName}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.bankName && <div className="invalid-feedback">{errors.bankName}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <input
-                                            type="text"
-                                            className={`form-control ${errors.branch ? 'is-invalid' : ''}`}
-                                            name="branch"
-                                            placeholder='Branch'
-                                            value={formData.branch}
-                                            onChange={handleChange}
-                                        />
-                                        {errors.branch && <div className="invalid-feedback">{errors.branch}</div>}
-                                    </div>
-                                    <div className="mb-3 form-check">
-                                        <input type="checkbox" className="form-check-input" id="exampleCheck1" />
-
-                                    </div>
-                                    <button type="submit" className="btn btn-primary">Submit</button>
-                                </form>
-                            </div> */}
-
-                            <Addkyc />
+                            <Addkyc onKycSubmitted={fetchKycData} />
+                            <div>
+                                <h2>KYC Data</h2>
+                                {kycData.length > 0 ? (
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Email</th>
+                                                <th>Account Holder Name</th>
+                                                <th>Account Number</th>
+                                                <th>IFSC Code</th>
+                                                <th>Bank Name</th>
+                                                <th>Branch</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {kycData.map((kyc) => (
+                                                <tr key={kyc.id}>
+                                                    <td>{kyc.email_id}</td>
+                                                    <td>{kyc.account_holder_name}</td>
+                                                    <td>{kyc.account_number}</td>
+                                                    <td>{kyc.ifsc_code}</td>
+                                                    <td>{kyc.bank_name}</td>
+                                                    <td>{kyc.branch}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p>No KYC data available.</p>
+                                )}
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
