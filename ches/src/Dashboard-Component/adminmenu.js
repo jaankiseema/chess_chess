@@ -1,9 +1,40 @@
 import { Button } from 'antd'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link,useNavigate } from 'react-router-dom'
 
 
 const Adminmenu = () => {
+    const navigate = useNavigate();
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        console.log("logout ....")
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        try {
+            const apiRes = await fetch("http://localhost:7000/api/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    token: token,
+                }),
+            });
+
+            if (apiRes.status === 200) {
+                localStorage.removeItem('token');
+                navigate('/account/login');
+            } else {
+                console.error('Error during logout:', await apiRes.json());
+            }
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
     return (
         <div>
 
@@ -62,14 +93,14 @@ const Adminmenu = () => {
                         </li>
                         <li className='mt-4'>
                             <i class="bi bi-gear text-white text-xl"></i>
-                            <Link to="/setting" style={{ textDecoration: 'none' }}> <span class="flex-1 ms-3 whitespace-nowrap text-white">Setting</span></Link>
+                            <Link to="/dashboardheader" style={{ textDecoration: 'none' }}> <span class="flex-1 ms-3 whitespace-nowrap text-white">Switch User</span></Link>
 
 
 
                         </li>
                         <li className='mt-4'>
                             <i class="bi bi-box-arrow-right text-xl text-white"></i>
-                            <span class="flex-1 ms-3 whitespace-nowrap text-white">Logout</span>
+                            <span onClick={handleLogout} class="flex-1 ms-3 whitespace-nowrap text-white">Logout</span>
 
 
                         </li>
