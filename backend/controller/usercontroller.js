@@ -607,7 +607,18 @@ export const getUserwithdrawn = async (req, res) => {
 export const getWithdrawn = async (req, res) => {
     try {
         connection.query(
-            'SELECT * FROM withdraw',
+            `SELECT 
+            withdraw.id, 
+            withdraw.amount, 
+            withdraw.status, 
+            withdraw.user_id, 
+            withdraw.date,
+            users.name,
+            users.email
+        FROM 
+            withdraw
+        INNER JOIN 
+            users ON withdraw.user_id = users.id`,
             (error, results) => {
                 if (error) {
                     return res.status(500).json({ error: 'Failed to fetch users' });

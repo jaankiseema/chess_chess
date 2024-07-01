@@ -1,11 +1,39 @@
-import React from 'react'
-import Adminmenu from './adminmenu'
-import Dashnavbar from './dashnavbar'
-import { Button, Col, Row } from 'react-bootstrap'
-import Adminnavigate from './adminnavigate'
-import { Flex } from 'antd'
+import React, { useState, useEffect } from 'react';
+import Adminmenu from './adminmenu';
+import Adminnavigate from './adminnavigate';
+import { Button } from 'react-bootstrap';
+import { Flex } from 'antd';
 
 const Adminwithdrow = () => {
+    const [withdrawals, setWithdrawals] = useState([]);
+
+    useEffect(() => {
+        const fetchWithdrawals = async () => {
+            const token = localStorage.getItem('token'); // Get the token from localStorage
+
+            try {
+                const response = await fetch('http://localhost:7000/api/withdrawn', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Include the token in the headers
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setWithdrawals(data.data);
+                } else {
+                    console.error('Error fetching withdrawals:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching withdrawals:', error);
+            }
+        };
+
+        fetchWithdrawals();
+    }, []);
+
     return (
         <div className='container-fluid'>
             <div className='row'>
@@ -14,112 +42,51 @@ const Adminwithdrow = () => {
                 </div>
                 <div className='col-sm-10'>
                     <Adminnavigate />
-                    {/* <AllUser /> */}
-
-
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+                    <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
                         <div className='container-fluid mt-4'>
                             <div className='row'>
-
-                                <div className='row'>
-                                    <div className='col-sm-11'><h5>Withdrowal Approve</h5></div>
-                                    <div className='col-sm-1'><img src='cros.png ' style={{ height: '12px' }} /></div>
-                                </div>
+                                <div className='col-sm-11'><h5>Withdrawal Approve</h5></div>
+                                <div className='col-sm-1'><img src='cros.png ' style={{ height: '12px' }} alt="Close" /></div>
                             </div>
                         </div>
 
-                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" title='g'>
-
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-
+                        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" title='g'>
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-
-                                    <th scope="col" class="px-6 py-3">
-                                        UPI N
-                                    </th>
-                                    <th scope="col" class="px-6 py-3">
-                                        Banking
-                                    </th>
-                                    <th scope="col" class="px-6 py-3">
-                                        Account Number
-                                    </th>
-                                    <th scope="col" class="px-6 py-3">
-                                        IFSC code
-                                    </th>
-                                    <th scope="col" class="px-6 py-3">
-                                        Amount
-                                    </th>
-                                    <th scope="col" class="px-6 py-3">
-                                        Time
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 " >
-                                        Staus
-                                    </th>
-                                    <th scope="col"  >
-                                        <Flex wrap gap="small">
-                                            <Button type="primary" style={{ background: 'red' }}>
-                                                Reject
-                                            </Button>
-
-                                        </Flex>
-                                    </th>
-                                    <td >
-                                        <Flex wrap gap="small">
-                                            <Button type="primary" style={{ background: 'green' }}>
-                                                Approve
-                                            </Button>
-
-                                        </Flex>
-                                    </td>
+                                    <th scope="col" className="px-6 py-3">User Name</th>
+                                    <th scope="col" className="px-6 py-3">User Email</th>
+                                    <th scope="col" className="px-6 py-3">Amount</th>
+                                    <th scope="col" className="px-6 py-3">Time</th>
+                                    <th scope="col" className="px-6 py-3">Status</th>
+                                    <th scope="col" className="px-6 py-3">Actions</th>
                                 </tr>
-
                             </thead>
                             <tbody>
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-
-
-
-                                </tr>
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-
-                                </tr>
-                                <tr class="bg-white dark:bg-gray-800">
-                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        Magic Mouse 2
-                                    </th>
-                                    <td class="px-6 py-4">
-                                        Black
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        Accessories
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        Accessories
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        Laptop PC
-                                    </td><td class="px-6 py-4">
-                                        Laptop PC
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        $99
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        $99
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                    </td>
-
-                                </tr>
+                                {withdrawals.map((withdrawal) => (
+                                    <tr key={withdrawal.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <td className="px-6 py-4">{withdrawal.name}</td>
+                                        <td className="px-6 py-4">{withdrawal.email}</td>
+                                        <td className="px-6 py-4">{withdrawal.amount}</td>
+                                        <td className="px-6 py-4">{new Date(withdrawal.date).toLocaleString()}</td>
+                                        <td className="px-6 py-4">{withdrawal.status === 1 ? 'Approved' : 'Inactive'}</td>
+                                        <td className="px-6 py-4">
+                                            {withdrawal.status === 0 ? (
+                                                <Button variant="success">
+                                                    Approve
+                                                </Button>
+                                            ) : (
+                                                'Approved'
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Adminwithdrow
+export default Adminwithdrow;
