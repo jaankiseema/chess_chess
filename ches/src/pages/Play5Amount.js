@@ -36,43 +36,7 @@ const Play5Amount = () => {
             }
         ]
     };
-    const handleDepositSubmit = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                transation_id: transactionId,
-                amount: parseFloat(amount)
-            })
-        };
-        try {
-            const response = await fetch('http://localhost:7000/api/add-deposit', requestOptions);
-            const data = await response.json();
-            if (response.ok) {
-                if (data.statusCode === '201') {
-                    // Add the new deposit to the list without refreshing
-                    setDeposits([...deposits, {
-                        transation_id: transactionId,
-                        amount: parseFloat(amount),
-                        status: 0 // Assuming status 0 means pending
-                    }]);
-                    toggleModal(); // Close the modal after successful submission
-                } else {
-                    setError(data.message);
-                }
-            } else {
-                setError(data.message);
-            }
-        } catch (error) {
-            console.error('Error adding deposit:', error);
-            setError('An error occurred while adding the deposit.');
-        }
-    };
+
     return (
         <div className={styles.container} >
             <Slider {...settings} style={{ marginTop: '100px' }}>
@@ -82,7 +46,7 @@ const Play5Amount = () => {
                         <img src="logo2.png" style={{ height: "300px", justifyItems: 'center' }} />
 
                     </Link>
-                    <h3 onSubmit={handleDepositSubmit}>Amount ₹ 30</h3>
+                    <h3>Amount ₹ 30</h3>
                     <p>Deposit</p>
                     <p>Lucknow</p>
                     <p>Play with a Online </p>
