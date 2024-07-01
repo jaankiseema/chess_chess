@@ -111,8 +111,8 @@
 // export default Dashboardmenu
 import React, { useState } from 'react';
 import { Layout, Menu, Drawer, Button } from 'antd';
-import { Link,useNavigate } from 'react-router-dom';
-import { MenuOutlined } from '@ant-design/icons'; 
+import { Link, useNavigate } from 'react-router-dom';
+import { MenuOutlined } from '@ant-design/icons';
 const DashboardMenu = () => {
     const navigate = useNavigate();
     const [visible, setVisible] = useState(false);
@@ -126,7 +126,7 @@ const DashboardMenu = () => {
     };
     const handleLogout = async (e) => {
         e.preventDefault();
-console.log("logout ....")
+        console.log("logout ....")
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No token found');
@@ -187,7 +187,7 @@ console.log("logout ....")
                                 </p>
                                 <p className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-arrow-repeat text-2xl text-white mx-2"></i>
-                                    <Link to="/settingdash2" className='text-white' style={{ textDecoration: 'none' }}>Transition</Link>
+                                    <Link to="/settingdash2" className='text-white' style={{ textDecoration: 'none' }}>Deposit</Link>
                                 </p>
                                 <p className="flex items-center px-4 py-2 mt-2 text-gray-100 hover:bg-gray-700">
                                     <i className="bi bi-gear text-white mx-2"></i>
